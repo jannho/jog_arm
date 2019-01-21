@@ -14,6 +14,8 @@ public:
     twist_pub_ = n_.advertise<geometry_msgs::TwistStamped>("jog_arm_server/delta_jog_cmds", 1);
     joint_delta_pub_ = n_.advertise<jog_msgs::JogJoint>("jog_arm_server/joint_delta_jog_cmds", 1);
 
+    n_.getParam("/jog_arm_server/planning_frame", planning_frame);
+
     spinner_.start();
     ros::waitForShutdown();
   };
@@ -24,6 +26,8 @@ private:
   ros::Publisher twist_pub_, joint_delta_pub_;
   ros::AsyncSpinner spinner_;
 
+  std::string planning_frame;
+
   // Convert incoming joy commands to TwistStamped commands for jogging.
   // The TwistStamped component goes to jogging, while buttons 0 & 1 control
   // joints directly.
@@ -31,6 +35,7 @@ private:
   {
     // Cartesian jogging with the axes
     geometry_msgs::TwistStamped twist;
+    twist.header.frame_id = planning_frame;
     twist.header.stamp = ros::Time::now();
     twist.twist.linear.x = msg->axes[0];
     twist.twist.linear.y = msg->axes[1];
